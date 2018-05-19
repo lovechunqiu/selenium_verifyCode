@@ -5,7 +5,7 @@ __author__ = 'lideqiang'
 '''
     1、截取屏幕获取验证码
     2、反填验证码进行跳过验证
-    3、用百度网站进行验证：https://passport.baidu.com/v2/?login
+    3、用微信网站进行验证：http://weixin.sogou.com/weixin?type=1&query=jiaojiaoma8&ie=utf8
 '''
 
 from selenium import webdriver
@@ -17,15 +17,9 @@ import time
 import sys
 reload(sys)
 sys.setdefaultencoding('utf8')
-
-username = "xxxxx"  
-password = "xxxxx"  
-  
-#登陆url
-loginUrl  = 'https://passport.baidu.com/v2/?login'  
-  
+ 
 #截图或验证码图片保存地址  
-screenImg = "/Users/lovechunqiu/work/selenium_verifyCode/upload/screenImg.png"  
+screenImg = "/Users/lovechunqiu/work/selenium_verifyCode/upload/wx.png"  
 
 """ 启动并返回浏览器，使用firefox """
 # 启动浏览器
