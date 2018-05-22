@@ -1,3 +1,8 @@
 geckodriver.log
-screenImg.png
 upload
+*.pyc
+.idea
+.DS_Store
+nohup.out
+verifyCode.py
+mayiproxy.py

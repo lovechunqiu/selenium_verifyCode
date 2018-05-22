@@ -18,8 +18,8 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf8')
 
-username = "xxxxx"  
-password = "xxxxx"  
+username = "xxx"  
+password = "xxx"  
   
 #登陆url
 loginUrl  = 'https://passport.baidu.com/v2/?login'  
@@ -30,7 +30,8 @@ screenImg = "/Users/lovechunqiu/work/selenium_verifyCode/upload/screenImg.png"
 """ 启动并返回浏览器，使用firefox """
 # 启动浏览器
 firefox_profile = webdriver.FirefoxProfile()
-browser = webdriver.Firefox(firefox_profile=firefox_profile)
+executable_path = "/usr/local/Cellar/geckodriver/0.20.0/bin/geckodriver"
+browser = webdriver.Firefox(firefox_profile=firefox_profile, executable_path=executable_path)
 
 #读取页面数据
 browser.get(loginUrl)
@@ -53,7 +54,7 @@ time.sleep(4)
 
 #获取验证码URL地址  
 imgsrc = browser.find_element_by_id("TANGRAM__PSP_3__verifyCodeImg").get_attribute('src')  
-#print imgsrc
+print imgsrc
 
 #如果匹配验证码路径成功（说明有提示输入验证码），则需读取验证码！  
 if re.match(r'https://passport.baidu.com/(passApi/img|cgi-bin/genimage).*', imgsrc):  
