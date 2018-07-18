@@ -36,18 +36,20 @@ wxDown   = SeleniumDownloaderBackend()
 #示例：腾讯体育
 wechatid = 'txsports'
 #返回页面URL和浏览器实例
-baseUrl, browser = wxDown.download_wechat(wechatid)
+# verifyType 增加验证类型，1表示搜狗验证码，2表示微信验证码
+baseUrl, verifyType, browser = wxDown.download_wechat(wechatid)
 
 #判断baseUrl是否为false
 if baseUrl == False:
     print 'error'
     browser.quit()
 
-#读取页面数据
-browser.get(baseUrl)
+if(verifyType == 2):
+    #读取页面数据
+    browser.get(baseUrl)
 
 #assert "请输入验证码" in browser.title
-if(browser.title != '请输入验证码'):
+if(browser.title != '请输入验证码' and verifyType == 2):
     print '不需要数据验证码'
     browser.quit()
 else:
@@ -55,17 +57,25 @@ else:
     print "startDate:",time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
 
     #获取验证码URL地址
-    imgsrc = browser.find_element_by_id("verify_img").get_attribute('src')
+    if(verifyType == 2):
+        imgsrc = browser.find_element_by_id("verify_img").get_attribute('src')
+    else:
+        imgsrc = baseUrl
+    
     print imgsrc
     #time.sleep(10)
 
     #如果匹配验证码路径成功（说明有提示输入验证码），则需读取验证码！
-    if re.match(r'http://mp.weixin.qq.com/mp/verifycode.*', imgsrc):
+    if re.match(r'http://((mp.weixin.qq.com/mp/verifycode)|(weixin.sogou.com/antispider/util/seccode)).*', imgsrc):
         #浏览器页面截屏
         browser.get_screenshot_as_file(screenImg)
         #定位验证码位置及大小
-        location = browser.find_element_by_id('verify_img').location
-        size   = browser.find_element_by_id('verify_img').size
+        if(verifyType == 1):
+            location = browser.find_element_by_id('seccodeImage').location
+            size   = browser.find_element_by_id('seccodeImage').size
+        else:
+            location = browser.find_element_by_id('verify_img').location
+            size   = browser.find_element_by_id('verify_img').size
         left   = location['x']
         top    = location['y']
         right  = location['x'] + size['width']
@@ -86,12 +96,19 @@ else:
             换别的OCR图像识别
         """
         code = getCode(screenImg)
-        browser.find_element_by_id("input").send_keys(code.strip())
+        if(verifyType == 1):
+            browser.find_element_by_id("seccodeInput").send_keys(code.strip())
+        else:
+            browser.find_element_by_id("input").send_keys(code.strip())
         #输出识别码
         print(code.strip())
+        time.sleep(5)
 
     #提交数据
-    browser.find_element_by_id("bt").click()
+    if(verifyType == 1):
+        browser.find_element_by_id("submit").click()
+    else:
+        browser.find_element_by_id("bt").click()
     time.sleep(2)
     #打印出当前时间
     print "endDate:",time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))

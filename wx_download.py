@@ -15,7 +15,7 @@ class SeleniumDownloaderBackend(object):
     def get_browser(self):
         # 启动浏览器
         firefox_profile = webdriver.FirefoxProfile()
-        #蚂蚁代理设置UA认证
+	#蚂蚁代理设置UA认证
         mayiAuthMd5, mayi_proxy, proxy_url, proxy_port = generate_sign()
         #动态获取UA，只返回一条
         getOnceUa = getRandomUa()
@@ -23,9 +23,9 @@ class SeleniumDownloaderBackend(object):
         firefox_profile.set_preference("network.proxy.type", 1) # 1代表手动设置
         firefox_profile.set_preference("network.proxy.share_proxy_settings", True)  # 所有协议公用一种代理配置
         firefox_profile.set_preference("network.proxy.http", proxy_url)
-        firefox_profile.set_preference("network.proxy.http_port", proxy_port)
+        firefox_profile.set_preference("network.proxy.http_port", int(proxy_port))
         firefox_profile.set_preference("network.proxy.ssl", proxy_url)
-        firefox_profile.set_preference("network.proxy.ssl_port", proxy_port)
+        firefox_profile.set_preference("network.proxy.ssl_port", int(proxy_port))
 
         user_agent = "||%s||%s||" % (getOnceUa,mayiAuthMd5)
         firefox_profile.set_preference("general.useragent.override", user_agent)
@@ -37,7 +37,8 @@ class SeleniumDownloaderBackend(object):
     def download_wechat(self, wechatid):
         """ 根据微信号最新文章 """
         self.visit_wechat_index(wechatid)
-        return self.visit_wechat_topic_list(wechatid),self.browser
+        baseUrl, verifyType = self.visit_wechat_topic_list(wechatid)
+        return baseUrl, verifyType, self.browser
 
     def visit_wechat_index(self, wechatid):
         """ 访问微信首页，输入微信id，点击搜公众号 """
@@ -45,7 +46,7 @@ class SeleniumDownloaderBackend(object):
         browser.get("http://weixin.sogou.com/")
         element_querybox = browser.find_element_by_name('query')
         element_querybox.send_keys(wechatid)
-        time.sleep(2)
+        #time.sleep(2)
         try:
             element_search_btn = browser.find_element_by_xpath("//input[@value='搜公众号']")
             print browser.title
@@ -57,14 +58,24 @@ class SeleniumDownloaderBackend(object):
     def visit_wechat_topic_list(self, wechatid):
         """ 找到微信号，并点击进入微信号的文章列表页面 """
         browser = self.browser
-        # 找到搜索列表第一个微信号, 点击打开新窗口
-        element_wechat = browser.find_element_by_xpath("//div[@class='txt-box']/p[@class='info']/label")
-        element_wechat_title = browser.find_element_by_xpath("//div[@class='txt-box']/p[@class='tit']/a")
-        if element_wechat and element_wechat.text == wechatid:
-            # element_wechat_title.click()
-            # 获取返回的url
-            href = element_wechat_title.get_attribute('href')
-            return href
-        else:
-            return False
+        #查看网页源代码
+        #pageSource = browser.page_source
+        #print pageSource
+        #time.sleep(1000)
+
+        #检测微信搜狗验证码问题
+        try:
+            imgsrc = browser.find_element_by_id("seccodeImage").get_attribute('src')
+            return imgsrc,1
+        except Exception,e:
+            # 找到搜索列表第一个微信号, 点击打开新窗口
+            element_wechat = browser.find_element_by_xpath("//div[@class='txt-box']/p[@class='info']/label")
+            element_wechat_title = browser.find_element_by_xpath("//div[@class='txt-box']/p[@class='tit']/a")
+            if element_wechat and element_wechat.text == wechatid:
+                # element_wechat_title.click()
+                # 获取返回的url
+                href = element_wechat_title.get_attribute('href')
+                return href,2
+            else:
+                return False
 
